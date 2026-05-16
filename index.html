@@ -3,20 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bilgi Muhafızı: Yeni Müzik</title>
+    <title>Bilgi Muhafızı: Mobil Özel</title>
     <style>
         body, html { margin: 0; padding: 0; overflow: hidden; width: 100%; height: 100%; font-family: 'Courier New', Courier, monospace; background: #050510; touch-action: none; user-select: none; }
         canvas { display: block; }
         
-        #ui { position: absolute; top: 10px; left: 10px; color: #fff; background: rgba(10, 10, 30, 0.9); padding: 12px; border-radius: 8px; pointer-events: none; z-index: 50; border: 2px solid #e74c3c; font-size: 13px; }
-        .stat { font-weight: bold; margin-bottom: 4px; letter-spacing: 1px; }
+        #ui { position: absolute; top: 10px; left: 10px; color: #fff; background: rgba(10, 10, 30, 0.9); padding: 10px; border-radius: 8px; pointer-events: none; z-index: 50; border: 2px solid #e74c3c; font-size: 11px; }
+        .stat { font-weight: bold; margin-bottom: 3px; letter-spacing: 1px; }
         
-        #joy-base { position: absolute; bottom: 30px; left: 30px; width: 110px; height: 110px; background: rgba(255,255,255,0.05); border-radius: 50%; border: 2px solid rgba(231, 76, 60, 0.4); z-index: 60; }
-        #joy-stick { position: absolute; width: 50px; height: 50px; background: rgba(231, 76, 60, 0.6); border-radius: 50%; top: 30px; left: 30px; }
+        /* Müzik Kontrol Butonu */
+        #music-toggle { position: absolute; top: 10px; right: 10px; background: rgba(10, 10, 30, 0.9); color: #fff; border: 2px solid #2ecc71; padding: 10px 15px; border-radius: 8px; font-weight: bold; font-family: inherit; z-index: 100; font-size: 12px; cursor: pointer; }
+        
+        /* Küçük Ekranlar İçin Büyütülmüş Kontroller */
+        #joy-base { position: absolute; bottom: 40px; left: 40px; width: 130px; height: 130px; background: rgba(255,255,255,0.05); border-radius: 50%; border: 2px solid rgba(231, 76, 60, 0.5); z-index: 60; }
+        #joy-stick { position: absolute; width: 60px; height: 60px; background: rgba(231, 76, 60, 0.7); border-radius: 50%; top: 35px; left: 35px; }
         
         .ctrl-btn { position: absolute; border-radius: 50%; border: none; color: white; font-weight: bold; z-index: 60; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(0,0,0,0.7); font-family: inherit; }
-        #btn-shoot { bottom: 35px; right: 135px; width: 85px; height: 85px; background: #e74c3c; font-size: 15px; }
-        #btn-reload { bottom: 42px; right: 35px; width: 70px; height: 70px; background: #f1c40f; color: #000; font-size: 12px; }
+        #btn-shoot { bottom: 45px; right: 160px; width: 100px; height: 100px; background: #e74c3c; font-size: 18px; }
+        #btn-reload { bottom: 55px; right: 40px; width: 85px; height: 85px; background: #f1c40f; color: #000; font-size: 14px; }
         
         #quiz { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 5, 15, 0.98); color: white; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 200; padding: 20px; text-align: center; border: 4px solid #e74c3c; box-sizing: border-box; }
         .q-opt { background: #1a1a3a; color: white; border: 2px solid #e74c3c; padding: 12px; margin: 6px; width: 95%; max-width: 400px; border-radius: 8px; font-size: 15px; font-weight: bold; font-family: inherit; cursor: pointer; }
@@ -31,9 +35,11 @@
 </head>
 <body>
 
+    <button id="music-toggle">🔊 MÜZİK: AÇIK</button>
+
     <div id="start-screen">
         <h1 style="color:#e74c3c; font-size: 28px; letter-spacing: 2px; text-shadow: 0 0 10px rgba(231,76,60,0.8); margin: 0;">BİLGİ MUHAFIZI</h1>
-        <p style="color:#888; font-size: 12px; margin: 5px 0;">Yeni Cyber-Synthwave Fon Müziği Aktif</p>
+        <p style="color:#888; font-size: 12px; margin: 5px 0;">%100 Garantili Orijinal Ses Sistemi</p>
         
         <input type="text" id="player-name-input" placeholder="İSMİNİ YAZ" maxlength="12" value="Oyuncu">
         <button class="start-btn" id="real-start-btn">SAVAŞI BAŞLAT</button>
@@ -63,10 +69,6 @@
 
     <canvas id="gameCanvas"></canvas>
 
-    <audio id="bgMusic" loop preload="auto" crossorigin="anonymous">
-        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-04.mp3" type="audio/mpeg">
-    </audio>
-
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -78,12 +80,73 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        let player = { x: canvas.width/2, y: canvas.height/2, r: 18, angle: 0, speed: 3.0 };
+        // Küçük ekranda daha iyi görüş için boyutlar dengelendi
+        let player = { x: canvas.width/2, y: canvas.height/2, r: 15, angle: 0, speed: 3.5 };
         let bullets = [], enemies = [], particles = [];
         let ammo = 60, maxAmmo = 60, isDead = false, isShooting = false;
         let moveX = 0, moveY = 0, shootTimer = 0, score = 0, lives = 3, wave = 1;
         let currentPlayerName = "Oyuncu";
         let enemySpawnInterval = null;
+
+        // --- %100 ÇALIŞAN ORİJİNAL DİJİTAL SES SİSTEMİ ---
+        let audioCtx = null;
+        let mainGainNode = null;
+        let isMusicPlaying = false;
+        let musicEnabled = true;
+
+        function initAudio() {
+            if (audioCtx) return;
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            mainGainNode = audioCtx.createGain();
+            mainGainNode.gain.setValueAtTime(0.15, audioCtx.currentTime); // Ses seviyesi %15
+            mainGainNode.connect(audioCtx.destination);
+        }
+
+        function playSynthTone(freq, duration, type = 'sawtooth') {
+            if (!audioCtx || !musicEnabled) return;
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(mainGainNode);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        // Arka planda dönecek retro siberpunk melodi dizisi
+        const melody = [110, 110, 130, 110, 146, 146, 130, 165, 110, 110, 130, 110, 98, 98, 87, 73];
+        let noteIndex = 0;
+
+        function startMusicLoop() {
+            if (isMusicPlaying) return;
+            isMusicPlaying = true;
+            function nextNote() {
+                if (!isMusicPlaying || !musicEnabled) return;
+                let freq = melody[noteIndex % melody.length];
+                playSynthTone(freq, 0.25, 'sawtooth');
+                if (noteIndex % 4 === 0) playSynthTone(55, 0.4, 'triangle'); // Bas vuruşu
+                noteIndex++;
+                setTimeout(nextNote, 250);
+            }
+            nextNote();
+        }
+
+        // Açma Kapama Buton Fonksiyonu
+        document.getElementById('music-toggle').addEventListener('click', function() {
+            musicEnabled = !musicEnabled;
+            if (musicEnabled) {
+                this.innerText = "🔊 MÜZİK: AÇIK";
+                this.style.border = "2px solid #2ecc71";
+                if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+                startMusicLoop();
+            } else {
+                this.innerText = "🔇 MÜZİK: KAPALI";
+                this.style.border = "2px solid #e74c3c";
+            }
+        });
 
         const questions = [
             { q: "Aşağıdakilerden hangisi İslam'ın şartlarından biri değildir?", a: ["Namaz Kılmak", "Dürüst Olmak", "Zekat Vermek", "Hacca Gitmek"], c: "Dürüst Olmak" },
@@ -121,7 +184,7 @@
         }
 
         function createParticles(x, y) {
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < 6; i++) {
                 particles.push({
                     x: x, y: y,
                     vx: (Math.random() - 0.5) * 4,
@@ -134,8 +197,8 @@
         function drawBackground() {
             ctx.fillStyle = '#050512'; ctx.fillRect(0,0, canvas.width, canvas.height);
             ctx.strokeStyle = 'rgba(231, 76, 60, 0.08)'; ctx.lineWidth = 1;
-            for(let i=0; i<canvas.width; i+=50) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i, canvas.height); ctx.stroke(); }
-            for(let j=0; j<canvas.height; j+=50) { ctx.beginPath(); ctx.moveTo(0,j); ctx.lineTo(canvas.width, j); ctx.stroke(); }
+            for(let i=0; i<canvas.width; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i, canvas.height); ctx.stroke(); }
+            for(let j=0; j<canvas.height; j+=40) { ctx.beginPath(); ctx.moveTo(0,j); ctx.lineTo(canvas.width, j); ctx.stroke(); }
         }
 
         document.getElementById('real-start-btn').addEventListener('click', function() {
@@ -143,20 +206,22 @@
             currentPlayerName = inputName !== "" ? inputName : "Oyuncu";
             document.getElementById('start-screen').style.display = 'none';
             
-            const music = document.getElementById('bgMusic');
-            music.volume = 0.35;
-            music.play().catch(err => console.log("Müzik yükleniyor:", err));
+            // Sesi başlat
+            initAudio();
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            startMusicLoop();
             
             score = 0; ammo = 60; lives = 3; wave = 1; enemies = []; bullets = []; particles = []; isDead = false;
             player.x = canvas.width/2; player.y = canvas.height/2;
             updateUI();
             
             if(enemySpawnInterval) clearInterval(enemySpawnInterval);
-            enemySpawnInterval = setInterval(spawnEnemy, 1500);
+            enemySpawnInterval = setInterval(spawnEnemy, 1600);
             
             gameLoop();
         });
 
+        // Büyütülmüş Joystick Sürükleme Mantığı
         const joyBase = document.getElementById('joy-base');
         const joyStick = document.getElementById('joy-stick');
         function handleMove(clientX, clientY) {
@@ -164,11 +229,11 @@
             const r = joyBase.getBoundingClientRect();
             const dx = clientX - (r.left + r.width/2);
             const dy = clientY - (r.top + r.height/2);
-            const dist = Math.min(Math.sqrt(dx*dx + dy*dy), 40);
+            const dist = Math.min(Math.sqrt(dx*dx + dy*dy), 50);
             const angle = Math.atan2(dy, dx);
             joyStick.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
-            moveX = Math.cos(angle) * (dist / 40);
-            moveY = Math.sin(angle) * (dist / 40);
+            moveX = Math.cos(angle) * (dist / 50);
+            moveY = Math.sin(angle) * (dist / 50);
             player.angle = angle;
         }
 
@@ -195,11 +260,11 @@
             if(isDead || document.getElementById('start-screen').style.display === 'flex') return;
             let side = Math.floor(Math.random() * 4);
             let x, y;
-            if(side==0){ x=Math.random()*canvas.width; y=-40; }
-            else if(side==1){ x=Math.random()*canvas.width; y=canvas.height+40; }
-            else if(side==2){ x=-40; y=Math.random()*canvas.height; }
-            else { x=canvas.width+40; y=Math.random()*canvas.height; }
-            enemies.push({ x, y, r: 26, s: 1.4 + (wave * 0.15) });
+            if(side==0){ x=Math.random()*canvas.width; y=-30; }
+            else if(side==1){ x=Math.random()*canvas.width; y=canvas.height+30; }
+            else if(side==2){ x=-30; y=Math.random()*canvas.height; }
+            else { x=canvas.width+30; y=Math.random()*canvas.height; }
+            enemies.push({ x, y, r: 20, s: 1.2 + (wave * 0.15) }); // Küçük ekranda kaçabilmek için boyut düşürüldü
         }
 
         function triggerQuiz() {
@@ -221,9 +286,9 @@
                     if(opt === q.c) { 
                         isDead = false; quizEl.style.display = 'none'; enemies = []; bullets = []; lives = 3;
                         updateUI();
-                        enemySpawnInterval = setInterval(spawnEnemy, Math.max(600, 1500 - (wave * 100)));
+                        enemySpawnInterval = setInterval(spawnEnemy, Math.max(700, 1600 - (wave * 100)));
                     } else { 
-                        alert(`ELENDİN!\n${currentPlayerName}, Final Skorun: ${score}`);
+                        alert(`ELENDİN!\n${currentPlayerName}, Skorun: ${score}`);
                         saveScore(currentPlayerName, score);
                         quizEl.style.display = 'none';
                         document.getElementById('start-screen').style.display = 'flex';
@@ -252,14 +317,15 @@
 
                 if(isShooting && ammo > 0) {
                     shootTimer++;
-                    if(shootTimer % 5 === 0) {
-                        bullets.push({ x: player.x, y: player.y, angle: player.angle, s: 12 });
+                    if(shootTimer % 6 === 0) {
+                        bullets.push({ x: player.x, y: player.y, angle: player.angle, s: 11 });
                         ammo--; updateUI();
+                        playSynthTone(600, 0.05, 'square'); // Ateş sesi efekti
                     }
                 }
 
                 particles.forEach((p, index) => {
-                    p.x += p.vx; p.y += p.vy; p.alpha -= 0.02;
+                    p.x += p.vx; p.y += p.vy; p.alpha -= 0.03;
                     ctx.fillStyle = `rgba(231, 76, 60, ${p.alpha})`;
                     ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill();
                     if(p.alpha <= 0) particles.splice(index, 1);
@@ -267,7 +333,7 @@
 
                 bullets.forEach((b, i) => {
                     b.x += Math.cos(b.angle) * b.s; b.y += Math.sin(b.angle) * b.s;
-                    ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.arc(b.x, b.y, 5, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, Math.PI*2); ctx.fill();
                     if(b.x<0 || b.x>canvas.width || b.y<0 || b.y>canvas.height) bullets.splice(i, 1);
                 });
 
@@ -282,6 +348,7 @@
                         enemies.splice(ei, 1);
                         lives--;
                         updateUI();
+                        playSynthTone(150, 0.15, 'sawtooth'); // Hasar alma efekti
                         if(lives <= 0) triggerQuiz();
                     }
                     
@@ -296,7 +363,7 @@
 
                 ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(player.angle);
                 ctx.fillStyle = '#2ecc71'; ctx.beginPath(); ctx.arc(0, 0, player.r, 0, Math.PI*2); ctx.fill();
-                ctx.fillStyle = '#fff'; ctx.fillRect(12, -3, 18, 6); ctx.restore();
+                ctx.fillStyle = '#fff'; ctx.fillRect(10, -2, 14, 4); ctx.restore();
             }
             requestAnimationFrame(gameLoop);
         }
