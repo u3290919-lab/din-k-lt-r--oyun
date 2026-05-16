@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bilgi Muhafızı: Kesin Çözüm</title>
+    <title>Bilgi Muhafızı: Yeni Müzik</title>
     <style>
         body, html { margin: 0; padding: 0; overflow: hidden; width: 100%; height: 100%; font-family: 'Courier New', Courier, monospace; background: #050510; touch-action: none; user-select: none; }
         canvas { display: block; }
@@ -33,7 +33,7 @@
 
     <div id="start-screen">
         <h1 style="color:#e74c3c; font-size: 28px; letter-spacing: 2px; text-shadow: 0 0 10px rgba(231,76,60,0.8); margin: 0;">BİLGİ MUHAFIZI</h1>
-        <p style="color:#888; font-size: 12px; margin: 5px 0;">Bulut Bağlantılı Müzik Sistemi Aktif</p>
+        <p style="color:#888; font-size: 12px; margin: 5px 0;">Yeni Cyber-Synthwave Fon Müziği Aktif</p>
         
         <input type="text" id="player-name-input" placeholder="İSMİNİ YAZ" maxlength="12" value="Oyuncu">
         <button class="start-btn" id="real-start-btn">SAVAŞI BAŞLAT</button>
@@ -64,7 +64,7 @@
     <canvas id="gameCanvas"></canvas>
 
     <audio id="bgMusic" loop preload="auto" crossorigin="anonymous">
-        <source src="https://pub-c5e31b5cdafb419a86a69d5d340a955c.r2.dev/umut_alp_ses.mp3" type="audio/mpeg">
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-04.mp3" type="audio/mpeg">
     </audio>
 
     <script>
@@ -143,9 +143,8 @@
             currentPlayerName = inputName !== "" ? inputName : "Oyuncu";
             document.getElementById('start-screen').style.display = 'none';
             
-            // Güvenli Tetikleme mekanizması
             const music = document.getElementById('bgMusic');
-            music.volume = 0.4;
+            music.volume = 0.35;
             music.play().catch(err => console.log("Müzik yükleniyor:", err));
             
             score = 0; ammo = 60; lives = 3; wave = 1; enemies = []; bullets = []; particles = []; isDead = false;
