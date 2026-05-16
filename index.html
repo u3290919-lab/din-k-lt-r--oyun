@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bilgi Muhafızı: Mobil Özel</title>
+    <title>Bilgi Muhafızı: Mobil Kusursuz Sürüm</title>
     <style>
         body, html { margin: 0; padding: 0; overflow: hidden; width: 100%; height: 100%; font-family: 'Courier New', Courier, monospace; background: #050510; touch-action: none; user-select: none; }
         canvas { display: block; }
@@ -11,16 +11,17 @@
         #ui { position: absolute; top: 10px; left: 10px; color: #fff; background: rgba(10, 10, 30, 0.9); padding: 10px; border-radius: 8px; pointer-events: none; z-index: 50; border: 2px solid #e74c3c; font-size: 11px; }
         .stat { font-weight: bold; margin-bottom: 3px; letter-spacing: 1px; }
         
-        /* Müzik Kontrol Butonu */
+        /* Sağ Üst Köşedeki Sabit Müzik Butonu */
         #music-toggle { position: absolute; top: 10px; right: 10px; background: rgba(10, 10, 30, 0.9); color: #fff; border: 2px solid #2ecc71; padding: 10px 15px; border-radius: 8px; font-weight: bold; font-family: inherit; z-index: 100; font-size: 12px; cursor: pointer; }
         
-        /* Küçük Ekranlar İçin Büyütülmüş Kontroller */
-        #joy-base { position: absolute; bottom: 40px; left: 40px; width: 130px; height: 130px; background: rgba(255,255,255,0.05); border-radius: 50%; border: 2px solid rgba(231, 76, 60, 0.5); z-index: 60; }
-        #joy-stick { position: absolute; width: 60px; height: 60px; background: rgba(231, 76, 60, 0.7); border-radius: 50%; top: 35px; left: 35px; }
+        /* Sol Köşede İzole Edilmiş Joystick */
+        #joy-base { position: absolute; bottom: 30px; left: 30px; width: 120px; height: 120px; background: rgba(255,255,255,0.05); border-radius: 50%; border: 2px solid rgba(231, 76, 60, 0.5); z-index: 60; }
+        #joy-stick { position: absolute; width: 55px; height: 55px; background: rgba(231, 76, 60, 0.7); border-radius: 50%; top: 32.5px; left: 32.5px; }
         
+        /* Sağ Köşede Dikey Düzenlenmiş ve Birbirinden Uzak Butonlar */
         .ctrl-btn { position: absolute; border-radius: 50%; border: none; color: white; font-weight: bold; z-index: 60; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(0,0,0,0.7); font-family: inherit; }
-        #btn-shoot { bottom: 45px; right: 160px; width: 100px; height: 100px; background: #e74c3c; font-size: 18px; }
-        #btn-reload { bottom: 55px; right: 40px; width: 85px; height: 85px; background: #f1c40f; color: #000; font-size: 14px; }
+        #btn-shoot { bottom: 140px; right: 30px; width: 95px; height: 95px; background: #e74c3c; font-size: 18px; }
+        #btn-reload { bottom: 30px; right: 35px; width: 80px; height: 80px; background: #f1c40f; color: #000; font-size: 13px; }
         
         #quiz { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 5, 15, 0.98); color: white; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 200; padding: 20px; text-align: center; border: 4px solid #e74c3c; box-sizing: border-box; }
         .q-opt { background: #1a1a3a; color: white; border: 2px solid #e74c3c; padding: 12px; margin: 6px; width: 95%; max-width: 400px; border-radius: 8px; font-size: 15px; font-weight: bold; font-family: inherit; cursor: pointer; }
@@ -39,7 +40,7 @@
 
     <div id="start-screen">
         <h1 style="color:#e74c3c; font-size: 28px; letter-spacing: 2px; text-shadow: 0 0 10px rgba(231,76,60,0.8); margin: 0;">BİLGİ MUHAFIZI</h1>
-        <p style="color:#888; font-size: 12px; margin: 5px 0;">%100 Garantili Orijinal Ses Sistemi</p>
+        <p style="color:#888; font-size: 12px; margin: 5px 0;">Mobil Düzen & Kesintisiz Ses Güncellemesi</p>
         
         <input type="text" id="player-name-input" placeholder="İSMİNİ YAZ" maxlength="12" value="Oyuncu">
         <button class="start-btn" id="real-start-btn">SAVAŞI BAŞLAT</button>
@@ -80,7 +81,6 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        // Küçük ekranda daha iyi görüş için boyutlar dengelendi
         let player = { x: canvas.width/2, y: canvas.height/2, r: 15, angle: 0, speed: 3.5 };
         let bullets = [], enemies = [], particles = [];
         let ammo = 60, maxAmmo = 60, isDead = false, isShooting = false;
@@ -88,7 +88,7 @@
         let currentPlayerName = "Oyuncu";
         let enemySpawnInterval = null;
 
-        // --- %100 ÇALIŞAN ORİJİNAL DİJİTAL SES SİSTEMİ ---
+        // --- YENİLENMİŞ KESİNTİSİZ SES SİSTEMİ ---
         let audioCtx = null;
         let mainGainNode = null;
         let isMusicPlaying = false;
@@ -98,25 +98,30 @@
             if (audioCtx) return;
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             mainGainNode = audioCtx.createGain();
-            mainGainNode.gain.setValueAtTime(0.15, audioCtx.currentTime); // Ses seviyesi %15
+            mainGainNode.gain.setValueAtTime(0.15, audioCtx.currentTime); 
             mainGainNode.connect(audioCtx.destination);
         }
 
-        function playSynthTone(freq, duration, type = 'sawtooth') {
-            if (!audioCtx || !musicEnabled) return;
+        function playSynthTone(freq, duration, type = 'sawtooth', isSoundEffect = false) {
+            if (!audioCtx) return;
+            // Eğer müzik kapalıysa ve bu bir efekt değilse (arka plan müziğiyse) çalma
+            if (!musicEnabled && !isSoundEffect) return;
+            
             let osc = audioCtx.createOscillator();
             let gain = audioCtx.createGain();
             osc.type = type;
             osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            
+            let volume = isSoundEffect ? 0.12 : 0.15;
+            gain.gain.setValueAtTime(volume, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            
             osc.connect(gain);
             gain.connect(mainGainNode);
             osc.start();
             osc.stop(audioCtx.currentTime + duration);
         }
 
-        // Arka planda dönecek retro siberpunk melodi dizisi
         const melody = [110, 110, 130, 110, 146, 146, 130, 165, 110, 110, 130, 110, 98, 98, 87, 73];
         let noteIndex = 0;
 
@@ -124,24 +129,25 @@
             if (isMusicPlaying) return;
             isMusicPlaying = true;
             function nextNote() {
-                if (!isMusicPlaying || !musicEnabled) return;
-                let freq = melody[noteIndex % melody.length];
-                playSynthTone(freq, 0.25, 'sawtooth');
-                if (noteIndex % 4 === 0) playSynthTone(55, 0.4, 'triangle'); // Bas vuruşu
+                // Döngü her koşulda akacak, böylece kilitlenme yaşanmayacak
+                if (musicEnabled) {
+                    let freq = melody[noteIndex % melody.length];
+                    playSynthTone(freq, 0.25, 'sawtooth', false);
+                    if (noteIndex % 4 === 0) playSynthTone(55, 0.4, 'triangle', false);
+                }
                 noteIndex++;
                 setTimeout(nextNote, 250);
             }
             nextNote();
         }
 
-        // Açma Kapama Buton Fonksiyonu
+        // Kesin çözüm üreten Açma/Kapama mekanizması
         document.getElementById('music-toggle').addEventListener('click', function() {
             musicEnabled = !musicEnabled;
             if (musicEnabled) {
                 this.innerText = "🔊 MÜZİK: AÇIK";
                 this.style.border = "2px solid #2ecc71";
                 if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-                startMusicLoop();
             } else {
                 this.innerText = "🔇 MÜZİK: KAPALI";
                 this.style.border = "2px solid #e74c3c";
@@ -206,7 +212,6 @@
             currentPlayerName = inputName !== "" ? inputName : "Oyuncu";
             document.getElementById('start-screen').style.display = 'none';
             
-            // Sesi başlat
             initAudio();
             if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
             startMusicLoop();
@@ -221,7 +226,7 @@
             gameLoop();
         });
 
-        // Büyütülmüş Joystick Sürükleme Mantığı
+        // Sol alt köşedeki Joystick hassasiyeti ayarlandı
         const joyBase = document.getElementById('joy-base');
         const joyStick = document.getElementById('joy-stick');
         function handleMove(clientX, clientY) {
@@ -264,7 +269,7 @@
             else if(side==1){ x=Math.random()*canvas.width; y=canvas.height+30; }
             else if(side==2){ x=-30; y=Math.random()*canvas.height; }
             else { x=canvas.width+30; y=Math.random()*canvas.height; }
-            enemies.push({ x, y, r: 20, s: 1.2 + (wave * 0.15) }); // Küçük ekranda kaçabilmek için boyut düşürüldü
+            enemies.push({ x, y, r: 20, s: 1.2 + (wave * 0.15) });
         }
 
         function triggerQuiz() {
@@ -320,7 +325,7 @@
                     if(shootTimer % 6 === 0) {
                         bullets.push({ x: player.x, y: player.y, angle: player.angle, s: 11 });
                         ammo--; updateUI();
-                        playSynthTone(600, 0.05, 'square'); // Ateş sesi efekti
+                        playSynthTone(550, 0.04, 'square', true); // Efektler her zaman çalacak
                     }
                 }
 
@@ -348,7 +353,7 @@
                         enemies.splice(ei, 1);
                         lives--;
                         updateUI();
-                        playSynthTone(150, 0.15, 'sawtooth'); // Hasar alma efekti
+                        playSynthTone(140, 0.12, 'sawtooth', true); 
                         if(lives <= 0) triggerQuiz();
                     }
                     
